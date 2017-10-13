@@ -123,14 +123,15 @@ type VEvent struct {
 	DTSTAMP     time.Time
 	DTSTART     time.Time
 	DTEND       time.Time
-	ORGANIZER	string
-	ATTENDEE	[]string
+	ORGANIZER   string
+	ATTENDEE    []string
 	SUMMARY     string
 	DESCRIPTION string
+	X_ALT_DESC  string
 	TZID        string
-	SEQUENCE	string
-	STATUS		string
-	ALARM		string
+	SEQUENCE    string
+	STATUS      string
+	ALARM       string
 
 	AllDay bool
 }
@@ -170,27 +171,27 @@ func (e *VEvent) EncodeIcal(w io.Writer) error {
 			return err
 		}
 	}
-	
+
 	if e.ORGANIZER != "" {
 		if _, err := b.WriteString("ORGANIZER" + e.ORGANIZER + "\r\n"); err != nil {
 			return err
 		}
 	}
-	
+
 	if len(e.ATTENDEE) > 0 {
 		for _, attendee := range e.ATTENDEE {
-		  if _, err := b.WriteString("ATTENDEE;CN=" + attendee + ":MAILTO:" + attendee + "\r\n"); err != nil {
+			if _, err := b.WriteString("ATTENDEE;CN=" + attendee + ":MAILTO:" + attendee + "\r\n"); err != nil {
 				return err
 			}
 		}
 	}
-	
+
 	if e.SEQUENCE != "" {
 		if _, err := b.WriteString("SEQUENCE:" + e.SEQUENCE + "\r\n"); err != nil {
 			return err
 		}
 	}
-	
+
 	if e.STATUS != "" {
 		if _, err := b.WriteString("STATUS:" + e.STATUS + "\r\n"); err != nil {
 			return err
@@ -205,6 +206,11 @@ func (e *VEvent) EncodeIcal(w io.Writer) error {
 			return err
 		}
 	}
+	if e.X_ALT_DESC != "" {
+		if _, err := b.WriteString("X-ALT-DESC;FMTTYPE=text/html:" + e.X_ALT_DESC + "\r\n"); err != nil {
+			return err
+		}
+	}
 	if _, err := b.WriteString("DTSTART;" + tzidTxt + "VALUE=" + timeStampType + ":" + e.DTSTART.Format(timeStampLayout) + "\r\n"); err != nil {
 		return err
 	}
@@ -212,7 +218,7 @@ func (e *VEvent) EncodeIcal(w io.Writer) error {
 	if _, err := b.WriteString("DTEND;" + tzidTxt + "VALUE=" + timeStampType + ":" + e.DTEND.Format(timeStampLayout) + "\r\n"); err != nil {
 		return err
 	}
-	
+
 	if e.ALARM != "" {
 		if _, err := b.WriteString("BEGIN:VALARM\r\nTRIGGER:" + e.ALARM + "\r\nACTION:DISPLAY\r\nEND:VALARM\r\n"); err != nil {
 			return err
